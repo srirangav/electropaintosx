@@ -142,8 +142,10 @@ protected:
     NSUInteger rand_state;
     CGFloat getNewAccel(void)
     {
-        //	unsigned int r(rand_r(&rand_state));
-        NSUInteger r(rand());
+        // unsigned int r(rand_r(&rand_state));
+        // NSUInteger r(rand());
+        // switch to arc4random() as rand() is outdated
+        NSUInteger r(arc4random());
         CGFloat f = r / (RAND_MAX + 1.0f);
         f = (f - 0.5f) * 2.0f;
         f *= max_acceleration;
@@ -184,14 +186,17 @@ random_generator_type z_delta_change(0.4, 0.7, 200, false, 0.005, 0.0005);
             NSOpenGLPFAColorSize, (NSOpenGLPixelFormatAttribute) 24,
             NSOpenGLPFAAlphaSize, (NSOpenGLPixelFormatAttribute) 8,
             NSOpenGLPFAStencilSize, (NSOpenGLPixelFormatAttribute) 0,
-            NSOpenGLPFAWindow,
+            // NSOpenGLPFAWindow,
+            // use the defined value 80 for NSOpenGLFAWindow to avoid
+            // deprication warnings
+            (NSOpenGLPixelFormatAttribute) 80,
             (NSOpenGLPixelFormatAttribute) 0,
     };
     
-    NSOpenGLPixelFormat *format = [[[NSOpenGLPixelFormat alloc] initWithAttributes:attr] autorelease];
-    // removed the autorelease ...
-    // glview = [[[NSOpenGLView alloc] initWithFrame:NSZeroRect pixelFormat:format] autorelease];
-    glview = [[NSOpenGLView alloc] initWithFrame:NSZeroRect pixelFormat:format];
+    NSOpenGLPixelFormat *format =
+        [[[NSOpenGLPixelFormat alloc] initWithAttributes:attr] autorelease];
+    glview = [[NSOpenGLView alloc] initWithFrame: NSZeroRect
+                                     pixelFormat: format];
     [self initGL];
   }
   return self;
@@ -251,7 +256,9 @@ random_generator_type z_delta_change(0.4, 0.7, 200, false, 0.005, 0.0005);
 
 
 - (void)initGL {
-    srand(time(NULL));
+
+    // srand() no longer needed, as we are switching to arc4random()
+    // srand(time(NULL));
     
     [[glview openGLContext] makeCurrentContext];
     GLint params[] = { 1 };
@@ -259,19 +266,20 @@ random_generator_type z_delta_change(0.4, 0.7, 200, false, 0.005, 0.0005);
 
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
 
-	//glutDisplayFunc(display);
-	//glutReshapeFunc(reshape);
+    glEnable (GL_DEPTH_TEST);
+    glEnable (GL_NORMALIZE);
 
-	glEnable (GL_LINE_SMOOTH);
-	glHint (GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+    glHint (GL_LINE_SMOOTH_HINT, GL_NICEST);
+    glEnable (GL_LINE_SMOOTH);
+
+    glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE);
-
-	glEnable(GL_DEPTH_TEST);
+    
 	glDepthMask(GL_FALSE);
 		
-    #if defined(GL_VERSION_1_1)
+#if defined(GL_VERSION_1_1)
     glPolygonOffset(-0.5, -2);
-    #endif
+#endif
 
 	wing_dl = glGenLists(1);
 	glNewList(wing_dl, GL_COMPILE);
@@ -312,9 +320,7 @@ random_generator_type z_delta_change(0.4, 0.7, 200, false, 0.005, 0.0005);
 	std::list<wing_type>::const_iterator i(wings.begin());
 	std::list<wing_type>::const_iterator end(wings.end());
 	unsigned int count(0);
-	//if (hasOpenGL(1, 1)) {
 #if defined(GL_VERSION_1_1)
-	//	if (hasOpenGL(1, 1))
     glEnable(GL_POLYGON_OFFSET_LINE);
 #endif
     glPushMatrix();
