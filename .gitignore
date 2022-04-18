@@ -1,7 +1,8 @@
-# Xcode
-Makefile
 .DS_Store
 Archives/
+sign.mk
+*.dmg
+# Xcode
 build/
 *.pbxuser
 !default.pbxuser
@@ -19,4 +20,3 @@ profile
 DerivedData
 .idea/
 notarization_check.txt
-*.dmg
