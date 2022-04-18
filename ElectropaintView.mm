@@ -191,13 +191,23 @@ random_generator_type z_delta_change(0.4, 0.7, 200, false, 0.005, 0.0005);
             // deprication warnings
             (NSOpenGLPixelFormatAttribute) 80,
             (NSOpenGLPixelFormatAttribute) 0,
-    };
+        };
     
-    NSOpenGLPixelFormat *format =
-        [[[NSOpenGLPixelFormat alloc] initWithAttributes:attr] autorelease];
-    glview = [[NSOpenGLView alloc] initWithFrame: NSZeroRect
-                                     pixelFormat: format];
-    [self initGL];
+        NSOpenGLPixelFormat *format =
+            [[[NSOpenGLPixelFormat alloc] initWithAttributes:attr]
+                autorelease];
+        glview = [[NSOpenGLView alloc] initWithFrame: NSZeroRect
+                                         pixelFormat: format];
+        if (glview)
+        {
+            /* enable OpenGL hi-res display support
+               https://developer.apple.com/library/archive/documentation/GraphicsAnimation/Conceptual/HighResolutionOSX/CapturingScreenContents/CapturingScreenContents.html#//apple_ref/doc/uid/TP40012302-CH10-SW35
+             */
+
+            [glview setWantsBestResolutionOpenGLSurface: YES];
+        }
+        
+        [self initGL];
   }
   return self;
 }
